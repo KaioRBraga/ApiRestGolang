@@ -1,0 +1,16 @@
+# Environment
+.env
+
+# Build artefacts
+main
+*.exe
+/bin/
+
+# Go
+vendor/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

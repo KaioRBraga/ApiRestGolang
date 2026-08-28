@@ -4,24 +4,24 @@ services:
     image: rest-api
     build: .
     ports:
-      - "8000:8000"
+      - "${APP_PORT:-8000}:8000"
     environment:
-      - DB_HOST=go_db
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=1234
-      - DB_NAME=postgres
+      - DB_HOST=${DB_HOST:-go_db}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-postgres}
     depends_on:
       - go_db
   go_db:
     container_name: go_db
     image: postgres:12
     environment:
-      POSTGRES_PASSWORD: 1234
-      POSTGRES_USER: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_DB: ${DB_NAME:-postgres}
     ports:
-      - "5432:5432"
+      - "${DB_HOST_PORT:-5432}:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql

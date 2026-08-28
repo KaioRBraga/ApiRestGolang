@@ -35,7 +35,7 @@
 | [Data Model](#data-model) | Domain entities and database schema. |
 | [API Reference](#api-reference) | Endpoints, payloads and status codes. |
 | [Getting Started](#getting-started) | Installation and execution. |
-| [Configuration](#configuration) | Environment variables and defaults. |
+| [Connection Resilience](#connection-resilience) | Database connection retry policy. |
 | [Database Initialisation](#database-initialisation) | Schema bootstrap and seed data. |
 
 ---
@@ -210,6 +210,9 @@ restAPI/
 ├── db/
 │   └── conn.go                    # Database connection with retry policy
 │
+├── .env                           # Local environment values (not versioned)
+├── .env.example                   # Environment template, safe to commit
+├── .gitignore
 ├── init.sql                       # Schema definition and seed data
 ├── Dockerfile                     # Application image definition
 ├── docker-compose.yml             # Application and database orchestration
@@ -416,6 +419,23 @@ curl -X POST http://localhost:8000/product \
 
 </div>
 
+### Environment File
+
+Values are supplied through a `.env` file at the repository root. Create one from the provided
+template before starting the stack:
+
+```bash
+cp .env.example .env
+```
+
+Docker Compose reads this file automatically and injects the values into both containers, where
+the application consumes them through `os.Getenv` in [db/conn.go](db/conn.go). Every variable
+falls back to a sensible default, so the stack starts even if the file is absent.
+
+> [!WARNING]
+> `.env` holds credentials and is excluded from version control by [.gitignore](.gitignore).
+> Commit `.env.example` only, and never the populated `.env`.
+
 ### Running with Docker Compose
 
 ```bash
@@ -478,24 +498,7 @@ The service listens on port `8000`.
 
 ---
 
-## Configuration
-
-The database connection is configured through environment variables. Sensible defaults are
-applied whenever a variable is not provided.
-
-| Variable | Default | Description |
-| :--- | :--- | :--- |
-| `DB_HOST` | `localhost` | Database host name. |
-| `DB_PORT` | `5432` | Database port. |
-| `DB_USER` | `postgres` | Database user. |
-| `DB_PASSWORD` | `1234` | Database password. |
-| `DB_NAME` | `postgres` | Database name. |
-
-> [!WARNING]
-> The default credentials are intended for local development only. They should be replaced with
-> securely managed secrets before any deployment to a shared or production environment.
-
-### Connection Resilience
+## Connection Resilience
 
 On start-up the application attempts to establish the database connection up to **six times**,
 pausing **five seconds** between attempts. This retry policy accommodates the start-up delay of
